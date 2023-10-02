@@ -1,76 +1,86 @@
-# LAMP STACK IMPLEMENTATION 
+# How To Install Apache Tomcat 10 on Ubuntu 20.04
 **By Mayowa Ipinyomi**
 
-Date: 10/09/2022
+Date: 02/10/2023
 
-Table of Contents
-* 1- Step 1 - Installing Apache and updating the firewall
-* 2- Step 2 - Installing Mysql
-* 3- Step 3 - Installing PHP
-* 4- Step 4 - Creating a virtualhost for your website your Apache
-* 5- Step 5 - Enable PHP on the website
+### Introduction
 
-## STEP 1 — INSTALLING APACHE AND UPDATING THE FIREWALL   
-Apache is an open source software available for free. The Apache web server is among the most popular web servers in the world. To install the Apache on the Ubuntu OS, we shall carry out the following steps; 
+[Apache Tomcat](https://tomcat.apache.org/) is a web server and servlet container that is used to serve [Java](https://www.oracle.com/java/) applications. It’s an open source implementation of the [Jakarta Servlet](https://jakarta.ee/specifications/servlet/), [Jakarta Server Pages](https://jakarta.ee/specifications/pages/), and other technologies of the [Jakarta EE](https://jakarta.ee/) platform.
 
-1- Install Apache using Ubuntu’s package manager `‘apt’`:
+In this tutorial, you’ll deploy Apache Tomcat 10 on Ubuntu 20.04. You will install Tomcat 10, set up users and roles, and navigate the admin user interface.
 
-Start by updating the package manager cache to update the software repository on the server. 
+## Prerequisites
 
-#update a list of packages in package manager
-`sudo apt update`
-
-![apache](./img/1-update.PNG)
-
-
-2- Then, install Apache with:
-#run apache2 package installation
-`sudo apt install apache2`
-
-![apache](./img/2-apache.PNG)
-
-3- You’ll also be prompted to confirm Apache’s installation by pressing `Y`, then ENTER.
-
-4-To verify that apache2 is running as a Service in our OS, use following command
-#verify that apache2 is running
-`sudo systemctl status apache2`
-
-![reload](./img/3-reload.PNG)
-
-**Note: If it is green and running, then you did everything correctly**
-
-5- Before we can receive any traffic by our Web Server, we need to open TCP port 80 which is the default port that web browsers use to access web pages on the Internet.
-
-Therefore, using the AWS Management Console, we shall configure it to open the port 80 for the Apache to run. 
+- One Ubuntu 20.04 server with a sudo non-root user and a firewall, which you can set up by following the [Ubuntu 20.04 Initial Server Setup](https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-20-04).
 
 
 
-6- First, let us try to check how we can access it locally in our Ubuntu shell, run:
-`curl http://localhost:80  or  curl http://127.0.0.1:80`
+## Step 1 — Installing Tomcat
 
-![port80](./img/4-port80.PNG)
+In this section, you will set up Tomcat 10 on your server. To begin, you will download its latest version and set up a separate user and appropriate permissions for it. You will also install the Java Development Kit (JDK).
 
-7- Now it is time for us to test how our Apache HTTP server can respond to requests from the Internet. Open a web browser of your choice and try to access following url
+For security purposes, Tomcat should run under a separate, unprivileged user. Run the following command to create a user called `tomcat`:
 
-`http://<Public-IP-Address>:80`
+```
+sudo useradd -m -d /opt/tomcat -U -s /bin/false tomcat
+```
 
-![default](./img/5-default.PNG)
+By supplying `/bin/false` as the user’s default shell, you ensure that it’s not possible to log in as `tomcat`.
 
-## Step 2 — Installing MySQL
-Now that you have a web server up and running, you need to install a Database Management System (DBMS) to be able to store and manage data for your site in a relational database. MySQL is a popular relational database management system used within PHP environments, so we will use it in our project. 
+You’ll now install the JDK. First, update the package manager cache by running:
 
-1- Again, use `‘apt’` to acquire and install this software:
+```
+sudo apt update
+```
 
-`$ sudo apt install mysql-server`
+Then, install the JDK by running the following command:
+
+```
+sudo apt install default-jdk
+```
+
+Answer `y` when prompted to continue with the installation.
+
+When the installation finishes, check the version of the available Java installation:
 
 
-![mysql](./img/6-mysql.PNG)
+`java -version`
 
-2-When prompted, confirm installation by typing `Y`, and then ENTER
+The output should be similar to this:
 
-When the installation is finished, log in to the MySQL console by typing:
+```
+Output
+openjdk version "11.0.14" 2022-01-18
+OpenJDK Runtime Environment (build 11.0.14+9-Ubuntu-0ubuntu2.20.04)
+OpenJDK 64-Bit Server VM (build 11.0.14+9-Ubuntu-0ubuntu2.20.04, mixed mode, sharing)
 
-`$ sudo mysql`
-This will connect to the MySQL server as the administrative database user root, which is inferred by the use of sudo when running this command
+```
 
-![mysql](./img/7-sudo-mysql.PNG)
+To install Tomcat, you’ll need the latest Core Linux build for Tomcat 10, which you can get from the [downloads page](https://tomcat.apache.org/download-10.cgi). Select the latest Core Linux build, ending in `.tar.gz`. At the time of writing, the latest version was `10.1.7`.
+
+First, navigate to the `/tmp` directory:
+
+```
+cd /tmp
+```
+
+Download the archive using `wget` by running the following command:
+
+```
+wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.1.13/bin/apache-tomcat-10.1.13.tar.gz
+```
+
+The `wget` command downloads resources from the Internet.
+
+Then, extract the archive you downloaded by running:
+
+Since you have already created a user, you can now grant `tomcat` ownership over the extracted installation by running:
+
+```
+sudo chown -R tomcat:tomcat /opt/tomcat/
+sudo chmod -R u+x /opt/tomcat/bin
+```
+
+Both commands update the settings of your `tomcat` installation. To learn more about these commands and what they do, visit [Linux Permissions Basics and How to Use Umask on a VPS](https://www.digitalocean.com/community/tutorials/linux-permissions-basics-and-how-to-use-umask-on-a-vps#chmod).
+
+In this step, you installed the JDK and Tomcat. You also created a separate user for it and set up permissions over Tomcat binaries. You will now configure credentials for accessing your Tomcat instance.
